@@ -90,6 +90,7 @@ MSBTError readLBL1(std::istream& msbt, LBL1Header& header) {
     Utility::byteswap_inplace(header.tableSize);
     Utility::byteswap_inplace(header.entryCount);
 
+    header.entries.reserve(header.entryCount);
     for (uint32_t i = 0; i < header.entryCount; i++) {
         msbt.seekg(header.offset + 0x14 + i * 0x8, std::ios::beg);
         LBLEntry entry;
@@ -104,6 +105,7 @@ MSBTError readLBL1(std::istream& msbt, LBL1Header& header) {
         Utility::byteswap_inplace(entry.stringCount);
         Utility::byteswap_inplace(entry.stringOffset);
         msbt.seekg(entry.stringOffset + header.offset + 0x10); //Seek to the start of the entries before the loop so it doesnt reset to the same string each time
+        entry.labels.reserve(entry.stringCount);
         for (uint32_t x = 0; x < entry.stringCount; x++) {
             Label label;
             label.checksum = i;
@@ -169,6 +171,7 @@ MSBTError readATR1(std::istream& msbt, ATR1Header& header) {
     Utility::byteswap_inplace(header.entryCount);
     Utility::byteswap_inplace(header.entrySize);
 
+    header.entries.reserve(header.entryCount);
     for (uint32_t i = 0; i < header.entryCount; i++) {
         msbt.seekg(header.offset + 0x18 + i * header.entrySize, std::ios::beg);
         Attributes attributes;
@@ -213,7 +216,8 @@ MSBTError readTSY1(std::istream& msbt, TSY1Header& header) {
 
     Utility::byteswap_inplace(header.tableSize);
 
-    for (uint32_t i = header.offset + 0x10; i < (header.tableSize + 0x10 + header.offset); i = i + 4) {
+    header.entries.reserve((header.tableSize + 0x10 + header.offset) / 4);
+    for (uint32_t i = header.offset + 0x10; i < (header.tableSize + 0x10 + header.offset); i += 4) {
         msbt.seekg(i, std::ios::beg);
         TSY1Entry entry;
         if (!msbt.read(reinterpret_cast<char*>(&entry.styleIndex), sizeof(entry.styleIndex)))
@@ -264,6 +268,7 @@ MSBTError readTXT2(std::istream& msbt, TXT2Header& header) {
     Utility::byteswap_inplace(header.tableSize);
     Utility::byteswap_inplace(header.entryCount);
 
+    header.entries.reserve(header.entryCount);
     for (uint32_t i = 0; i < header.entryCount; i++) {
         msbt.seekg(header.offset + 0x14 + i * 0x4); //0x14 comes from the header info size
         TXT2Entry entry;

@@ -351,7 +351,7 @@ namespace FileTypes {
         fresHeader.embeddedFiles[fileIndex].fileLength = inData.size();
 
         if (fileIndex != fresHeader.embeddedFiles.size() - 1) { //Check if it is the last embedded file
-            for (int i = fileIndex + 1; fileIndex < fresHeader.embeddedFiles.size(); i++) {
+            for (unsigned int i = fileIndex + 1; i < fresHeader.embeddedFiles.size(); i++) {
                 fresHeader.embeddedFiles[i].dataOffset = fresHeader.embeddedFiles[i].dataOffset + (inData.size() - originalLen); //Change offset based on how much the previous file shifted it
             }
         }

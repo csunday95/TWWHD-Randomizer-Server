@@ -567,6 +567,7 @@ namespace FileTypes
 			return EventlistError::UNEXPECTED_EVENT_OFFSET;
 		}
 
+		Events.reserve(num_events); //Minimize copies
 		for (unsigned int event_index = 0; event_index < num_events; event_index++) {
 			int offset = event_list_offset + event_index * 0xB0;
 			Event event;
@@ -581,6 +582,7 @@ namespace FileTypes
 			Events_By_Name[event.name] = event;
 		}
 
+		All_Actors.reserve(num_actors); //Minmize copies
 		for (unsigned int actor_index = 0; actor_index < num_actors; actor_index++) {
 			int offset = actor_list_offset + actor_index * 0x50;
 			Actor actor;
@@ -591,6 +593,7 @@ namespace FileTypes
 			All_Actors.push_back(actor);
 		}
 
+		All_Actions.reserve(num_actions); //Minmize copies
 		for (unsigned int action_index = 0; action_index < num_actions; action_index++) {
 			int offset = action_list_offset + action_index * 0x50;
 			Action action;
@@ -601,6 +604,7 @@ namespace FileTypes
 			All_Actions.push_back(action);
 		}
 
+		All_Properties.reserve(num_properties); //Minmize copies
 		for (unsigned int property_index = 0; property_index < num_properties; property_index++) { //Populate properties
 			int offset = property_list_offset + property_index * 0x40;
 			Property property;
@@ -611,6 +615,7 @@ namespace FileTypes
 			All_Properties.push_back(property);
 		}
 
+		All_Floats.reserve(num_floats); //Minmize copies
 		for (unsigned int float_index = 0; float_index < num_floats; float_index++) {
 			int offset = float_list_offset + float_index * 4;
 			float float_val;
@@ -622,6 +627,7 @@ namespace FileTypes
 			All_Floats.push_back(float_val);
 		}
 
+		All_Integers.reserve(num_integers); //Minmize copies
 		for (unsigned int integer_index = 0; integer_index < num_integers; integer_index++) {
 			int offset = integer_list_offset + integer_index * 4;
 			int32_t integer;
@@ -664,14 +670,14 @@ namespace FileTypes
 
 		for (Property& property : All_Properties) {
 			if (property.data_type == 0) {
-				std::vector<float> value;
+				std::vector<float> value(property.data_size); //Minimize copies
 				for (unsigned int i = 0; i < property.data_size; i++) {
 					value.push_back(All_Floats[property.data_index + i]);
 				}
 				property.value = value;
 			}
 			else if (property.data_type == 1) {
-				std::vector<XYZ> value;
+				std::vector<XYZ> value(property.data_size);
 				for (unsigned int i = 0; i < property.data_size; i++) {
 					XYZ temp;
 					temp.x = All_Floats[property.data_index + i * 3];
@@ -682,7 +688,7 @@ namespace FileTypes
 				property.value = value;
 			}
 			else if (property.data_type == 3) {
-				std::vector<int> value;
+				std::vector<int> value(property.data_size);
 				for (unsigned int i = 0; i < property.data_size; i++) {
 					value.push_back(All_Integers[property.data_index + i]);
 				}
@@ -741,6 +747,7 @@ namespace FileTypes
 
 		}
 
+		unused_flag_ids.reserve(TOTAL_NUM_FLAGS);
 		for (int i = 0; i < TOTAL_NUM_FLAGS; i++) { //Populate the list of all flags (SD randomizer uses range but this is c++ so we don't have a super good substitute)
 			unused_flag_ids.push_back(i);
 		}
@@ -818,6 +825,7 @@ namespace FileTypes
 
 			offset = offset + actor.DATA_SIZE;
 
+			All_Actions.reserve(actor.actions.size()); //Minimize copies
 			for (unsigned int x = 0; x < actor.actions.size(); x++) {
 				Action& action = actor.actions[x];
 				if (x == actor.actions.size() - 1) {
@@ -840,6 +848,7 @@ namespace FileTypes
 
 			offset = offset + action.DATA_SIZE;
 
+			All_Properties.reserve(action.properties.size()); //Minimize copies
 			for (unsigned int x = 0; x < action.properties.size(); x++) {
 				Property& property = action.properties[x];
 				All_Properties.push_back(property);
@@ -1006,7 +1015,7 @@ namespace FileTypes
 	}
 
 	EventlistError EventList::writeToFile(const std::string& outFilePath) {
-		std::ofstream outFile(outFilePath, std::ios::binary | std::ios::in | std::ios::out);
+		std::ofstream outFile(outFilePath, std::ios::binary);
 		if(!outFile.is_open()) {
 			return EventlistError::COULD_NOT_OPEN;
 		}

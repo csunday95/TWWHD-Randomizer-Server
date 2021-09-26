@@ -119,6 +119,7 @@ namespace FileTypes {
 		Utility::byteswap_inplace(ehdr.e_shnum);
 		Utility::byteswap_inplace(ehdr.e_shstrndx);
 
+		shdr_table.reserve(ehdr.e_shnum); //Allocate the memory from the start to minimize copies
 		for (int i = 0; i < ehdr.e_shnum; i++) {
 			Elf32_shdr shdr;
 			elf.seekg(ehdr.e_shoff + ehdr.e_shentsize * i, std::ios::beg);
