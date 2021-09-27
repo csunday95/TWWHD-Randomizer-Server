@@ -23,7 +23,8 @@ public:
                  const fspath& randoWorkingDir, 
                  const fspath& outputDir);
 
-    fspath getCachePath(const std::vector<std::string>& gameFilePath);
+    std::ifstream openGameFile(const std::vector<std::string>& gameFilePath, fspath& relPath);
+    void repackGameFile(const std::vector<std::string>& gameFilePath);
 
 private:
     enum struct CacheEntryType
@@ -42,6 +43,7 @@ private:
     };
 
     fspath extractFile(const std::vector<std::string>& fileSpec);
+    //bool repackFile();
     
     fspath relToGameAbsolute(const fspath& relPath);
     fspath absToGameRelative(const fspath& absPath);

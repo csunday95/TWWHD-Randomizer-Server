@@ -67,7 +67,8 @@ RandoSession::fspath RandoSession::extractFile(const std::vector<std::string>& f
         }
         else if(element.compare("SARC") == 0)
         {
-            resultKey = cacheKey + ".unpack" + fspath::preferred_separator;
+            // TODO: do we need to make / here platform agnostic?
+            resultKey = cacheKey + ".unpack/";
         }
         else
         {
@@ -82,9 +83,9 @@ RandoSession::fspath RandoSession::extractFile(const std::vector<std::string>& f
         
         if (element.compare("YAZ0") == 0)
         {
-            std::ifstream inputFile(workingDir / cacheKey);
+            std::ifstream inputFile(workingDir / cacheKey, std::ios::binary);
             if (!inputFile.is_open()) return "";
-            std::ofstream outputFile(workingDir / resultKey);
+            std::ofstream outputFile(workingDir / resultKey, std::ios::binary);
             if (!inputFile.is_open()) return "";
             if(FileTypes::yaz0Decode(inputFile, outputFile) == 0)
             {
@@ -94,14 +95,14 @@ RandoSession::fspath RandoSession::extractFile(const std::vector<std::string>& f
         else if(element.compare("SARC") == 0)
         {
             FileTypes::SARCFile sarc;
-            auto err = sarc.loadFromFile(workingDir / cacheKey);
+            auto err = sarc.loadFromFile((workingDir / cacheKey).string());
             if (err != SARCError::NONE) return "";
             fspath extractTo = workingDir / resultKey;
             if (!std::filesystem::is_directory(extractTo))
             {
                 std::filesystem::create_directory(extractTo);
             }
-            if((err = sarc.extractToDir(extractTo)) != SARCError::NONE) return "";
+            if((err = sarc.extractToDir(extractTo.string())) != SARCError::NONE) return "";
         }
         else
         {
@@ -131,7 +132,15 @@ RandoSession::fspath RandoSession::extractFile(const std::vector<std::string>& f
     return workingDir / resultKey;
 }
 
-RandoSession::fspath RandoSession::getCachePath(const std::vector<std::string>& gameFilePath)
+std::ifstream RandoSession::openGameFile(const std::vector<std::string>& gameFilePath, RandoSession::fspath& relPath)
 {
-    return extractFile(gameFilePath);
+    auto workingPath = extractFile(gameFilePath);
+    relPath = std::filesystem::relative(workingPath, workingDir);
+    return std::ifstream(workingPath, std::ios::binary);
 }
+
+void RandoSession::repackGameFile(const std::vector<std::string>& gameFilePath)
+{
+
+}
+
