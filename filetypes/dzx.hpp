@@ -6,7 +6,7 @@
 #include<unordered_map>
 #include"../utility/byteswap.hpp"
 
-static const int default_layer = 255; //This is just for ease of reading, doesnt need to stay
+#define default_layer 255 //Helps check for default layer (layer 0/NULL is a valid layer, 255 is not)
 
 enum struct DZXError
 {
@@ -35,7 +35,7 @@ class Chunk {
 public:
 	int offset = 0;
 	char type[5] = "\0\0\0\0";
-	int layer = 255; //255 to signify default layer, set to that as default for chunks that don't use it
+	int layer = default_layer; //Uses 255 to signify default layer, default for chunks that don't use it
 	uint32_t num_entries = 0;
 	uint32_t first_entry_offset = 0;
 	int entry_size = 0;
@@ -60,7 +60,7 @@ namespace FileTypes {
 		DZXError loadFromFile(const std::string& filePath);
 		std::vector<ChunkEntry> entries_by_type(std::string chunk_type);
 		std::vector<ChunkEntry> entries_by_type_and_layer(std::string chunk_type, int layer);
-		ChunkEntry& add_entity(char chunk_type[4], int layer = 255);
+		ChunkEntry& add_entity(char chunk_type[4], int layer = default_layer);
 		DZXError writeToStream(std::ostream& out);
 		DZXError writeToFile(const std::string& outFilePath);
 	private:
